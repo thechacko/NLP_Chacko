@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 from bs4 import BeautifulSoup as bs
 from loguru import logger
 import time
@@ -38,7 +39,41 @@ try:
     with open(f'./raw/livemint_{DATE}.txt', 'wb') as f:
         f.write(r.content)
 except Exception as e:
-    logger.error(f"Unable to scrape data: {e}")
+    logger.error(f"Unable to fetch HTML data: {e}")
+
+with open(f'./raw/livemint_{DATE}.txt', 'rb') as f:
+        loaded_content = f.read()
+    
+loaded_soup = bs(loaded_content, features='xml')
+
+urls = loaded_soup.find_all('url')
+
+yday_news = []
+
+for u in urls:
+    art_data = {}
+    try:
+        art_data['news_link'] = u.find('loc').text
+    except Exception:
+        art_data['news_link'] = None
+    try:
+        art_data['pub_date'] = u.find('news:publication_date').text
+    except Exception:
+        art_data['pub_date'] = None
+    try:
+        art_data['title'] = u.find('news:title').text
+    except Exception:
+        art_data['title'] = None
+    try:
+        art_data['keywords'] = u.find('news:keywords').text
+    except Exception:
+        art_data['keywords'] = None
+    
+    yday_news.append(art_data)
+
+
+
+
 
 try:
     with open(f'./raw/livemint_{DATE}.txt', 'rb') as f:
@@ -52,10 +87,23 @@ try:
 
     for u in urls:
         art_data = {}
-        art_data['news_link'] = u.find('xhtml:link')['href']
-        art_data['pub_date'] = u.find('news:publication_date').text
-        art_data['title'] = u.find('news:title').text
-        art_data['keywords'] = u.find('news:keywords').text
+        try:
+            art_data['news_link'] = u.find('loc').text
+        except Exception:
+            art_data['news_link'] = None
+        try:
+            art_data['pub_date'] = u.find('news:publication_date').text
+        except Exception:
+            art_data['pub_date'] = None
+        try:
+            art_data['title'] = u.find('news:title').text
+        except Exception:
+            art_data['title'] = None
+        try:
+            art_data['keywords'] = u.find('news:keywords').text
+        except Exception:
+            art_data['keywords'] = None
+        
         yday_news.append(art_data)
 
     df = pd.json_normalize(yday_news)
@@ -64,14 +112,17 @@ try:
     df = df[df['category']=='companies']
     df.drop('category', axis=1, inplace=True)
 
-    article_text = []
-    for link in tqdm(df['news_link']):
-        time.sleep(1)
-        r = requests.get(link)
-        soup = bs(r.text, 'html.parser')
-        article_text.append(" ".join([item.text for item in soup.find_all('p')]))
+    try:
+        article_text = []
+        for link in tqdm(df['news_link']):
+            time.sleep(1)
+            r = requests.get(link)
+            soup = bs(r.text, 'html.parser')
+            article_text.append(" ".join([item.text for item in soup.find_all('p')]))
 
-    df['articles'] = article_text
+        df['articles'] = article_text
+    except Exception:
+        df['articles'] = ''
     df['scraped_date'] = DATE
     logger.info("Scraping succesfully completed")
 except Exception as e:
