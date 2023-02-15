@@ -1,24 +1,26 @@
 from fastapi  import FastAPI
-import uvicorn
 from pydantic import BaseModel
 
-class Item(BaseModel):
+class UserItem(BaseModel):
     user_id: str
     index: int
 
 database = ['Car', 'Bike', 'Bus']
 
-user_id = "ABC123"
+user_id_1 = "ABC123"
 
 app = FastAPI()
 
 
-@app.get("/")
+@app.get('/')
 def getinfo():
     return {"Result": "Hello World.. Chacko.. how do you do...."}
 
-@app.post("/user_item")
-def fetch_item(user_item: Item):
-    if user_item['user_id'] == user_id:
-        response_item = database[user_item['index']]
-    return {"Response is: ": response_item}
+@app.post('/item')
+def fetch_item(user_item: UserItem):
+    if user_item.user_id == user_id_1:
+        idx = user_item.index
+        response_item = database[idx]
+        return {"Response": response_item}
+    else:
+        return {"Response": "Invalid user"}
