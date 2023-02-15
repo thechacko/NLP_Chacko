@@ -5,6 +5,8 @@ from gensim.models import CoherenceModel
 from gensim.models.ldamodel import LdaModel
 
 
+# paragraph > sentence > words > encodings/embeddings > dimensionality reduction > clustering > topic assignment
+
 MODEL_PATH = './models/ldamodel'
 NTOPICS = 10
 RANDOM_STATE = 42
