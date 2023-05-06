@@ -1,5 +1,0 @@
-# Crawling
-
-# Scraping
-
-# Storing
