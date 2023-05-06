@@ -1,4 +1,15 @@
+from loguru import logger
+from datetime import datetime
+
+
+TODAY = datetime.today().strftime('%Y%m%d')
+logger.add(f'./logs/{TODAY}.log', rotation='1 day', retention='7 days', level='INFO')
+
+logger.info('Starting the process')
+
+
 # Get response from the url
+response = use_the_function_to_fetch_the_response()
 
 # Parse and save raw html from the response
 
