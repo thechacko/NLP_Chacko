@@ -2,7 +2,7 @@
 
 # Parse and save raw html from the response
 
-# Get the data from the raw html
+# Get the data from the raw html (create a cache function to store the data and delete after 7 days)
 
 # Process the data retrieved from the raw html
 
